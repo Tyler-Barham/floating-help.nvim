@@ -127,7 +127,7 @@ function View:setup(opts)
   vim.opt_local.filetype = 'help'
   vim.opt_local.buftype = 'help'
 
-  vim.api.nvim_create_autocmd({'WinClosed', 'WinLeave'}, {
+  vim.api.nvim_create_autocmd({'WinClosed'}, {
     callback = function(ev)
       if ev.buf == self.buf_border or ev.buf == self.buf_text then
         view:close()
@@ -164,26 +164,11 @@ function View:close()
 end
 
 function View:update(opts)
-  local win_config_border = get_window_config(opts)
-  local border = get_border(win_config_border)
+  local v = view  -- Get ref to this obj
+  view:close()    -- Close and cleanup (losing self ref)
+  view = v        -- Reinstate self ref (don't run new() or external/internal refs point to diff objs)
+  v:setup(opts)   -- Run a clean setup
 
-  -- Redraw the border
-  vim.api.nvim_buf_set_lines(self.buf_border, 0, -1, true, border)
-  vim.api.nvim_win_set_config(self.win_border, win_config_border)
-
-  -- Resize the text-buffer window
-  local win_conf_text = {
-      relative = win_config_border.relative,
-      width    = win_config_border.width - 2,
-      height   = win_config_border.height - 2,
-      col      = win_config_border.col + 1,
-      row      = win_config_border.row + 1
-  }
-  vim.api.nvim_win_set_config(self.win_text, win_conf_text)
-  vim.api.nvim_set_current_buf(self.buf_text)
-
-  local query = opts.query or ''
-  vim.fn.execute('help ' .. query)
 end
 
 function View.create(opts)
