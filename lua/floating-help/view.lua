@@ -86,7 +86,8 @@ function View:setup(opts)
   vim.opt_local.filetype = 'help'
   vim.opt_local.buftype = 'help'
 
-  vim.fn.execute('help ' .. config.options.query)
+  local query = opts.query or ''
+  vim.fn.execute('help ' .. query)
 end
 
 function View:is_valid()

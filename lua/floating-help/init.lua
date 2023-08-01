@@ -29,6 +29,8 @@ local function get_opts(...)
       local k, v = value:match("^(.*)=(.*)$")
       if k then
         opts[k] = v
+      else
+        opts['query'] = value
       end
     else
       opts[key] = value
