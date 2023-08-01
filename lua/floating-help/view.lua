@@ -3,6 +3,8 @@ local config = require('floating-help.config')
 local View = {}
 View.__index = View
 
+local view = nil
+
 function View:new(opts)
   opts = opts or {}
 
@@ -125,27 +127,40 @@ function View:setup(opts)
   vim.opt_local.filetype = 'help'
   vim.opt_local.buftype = 'help'
 
+  vim.api.nvim_create_autocmd({'WinClosed', 'WinLeave'}, {
+    callback = function(ev)
+      if ev.buf == self.buf_border or ev.buf == self.buf_text then
+        view:close()
+      end
+    end
+  })
+
   local query = opts.query or ''
   vim.fn.execute('help ' .. query)
 end
 
 function View:is_valid()
-  return vim.api.nvim_buf_is_valid(self.buf_text) and vim.api.nvim_buf_is_loaded(self.buf_text)
+  return self.buf_text and vim.api.nvim_buf_is_valid(self.buf_text) and vim.api.nvim_buf_is_loaded(self.buf_text)
 end
 
 function View:close()
-  if vim.api.nvim_win_is_valid(self.win_text) then
+  if self.win_text and vim.api.nvim_win_is_valid(self.win_text) then
     vim.api.nvim_win_close(self.win_text, {})
+    self.win_text = nil
   end
-  if vim.api.nvim_win_is_valid(self.win_border) then
+  if self.win_border and vim.api.nvim_win_is_valid(self.win_border) then
     vim.api.nvim_win_close(self.win_border, {})
+    self.win_border = nil
   end
-  if vim.api.nvim_buf_is_valid(self.buf_text) then
+  if self.buf_text and vim.api.nvim_buf_is_valid(self.buf_text) then
     vim.api.nvim_buf_delete(self.buf_text, {})
+    self.buf_text = nil
   end
-  if vim.api.nvim_buf_is_valid(self.buf_border) then
+  if self.buf_border and vim.api.nvim_buf_is_valid(self.buf_border) then
     vim.api.nvim_buf_delete(self.buf_border, {})
+    self.buf_border = nil
   end
+  view = nil
 end
 
 function View:update(opts)
@@ -174,10 +189,12 @@ end
 function View.create(opts)
   opts = opts or {}
 
-  local buffer = View:new(opts)
-  buffer:setup(opts)
+  if not view then
+    view = View:new(opts)
+    view:setup(opts)
+  end
 
-  return buffer
+  return view
 end
 
 return View
