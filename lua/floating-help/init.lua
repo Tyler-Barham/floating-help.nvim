@@ -50,7 +50,7 @@ function FloatingHelp.open(...)
   local opts = get_opts(...)
 
   if FloatingHelp.is_open() then
-    view.update(opts)
+    view:update(opts)
   else
     view = View.create(opts)
   end

@@ -21,7 +21,7 @@ local function get_anchor(pos,ew,eh,ww,wh)
   -- Center
   local anchor = {
     col = math.floor((ew - ww) / 2),
-    row = math.floor((eh - wh) / 2)
+    row = math.floor((eh - wh) / 2) - 1 -- `-1` offset to always have status/command lines visible
   }
 
   if string.match(pos,'N') ~= nil then
@@ -40,7 +40,7 @@ local function get_anchor(pos,ew,eh,ww,wh)
   return anchor
 end
 
-function View:setup(opts)
+local function get_window_config(opts)
   opts = opts or {}
 
   config.options.max_width = opts.max_width or config.options.max_width
@@ -52,12 +52,18 @@ function View:setup(opts)
 
   local win_width = config.options.max_width
   local win_height = config.options.max_height
+
+  -- Redo for percentages
   if win_width < 1 then
     win_width = math.floor(editor_width * win_width)
   end
   if win_height < 1 then
     win_height = math.floor(editor_height * win_height)
   end
+
+  -- clip size
+  win_width = math.min(win_width, editor_width)
+  win_height = math.min(win_height, editor_height-2) -- `-2` for status and command lines
 
   local anchor = get_anchor(
     config.options.position,
@@ -77,14 +83,24 @@ function View:setup(opts)
       style    = 'minimal',
   }
 
-  local border_top = "╭" .. string.rep("─", win_width - 2) .. "╮"
-  local border_mid = "│" .. string.rep(" ", win_width - 2) .. "│"
-  local border_bot = "╰" .. string.rep("─", win_width - 2) .. "╯"
+  return win_config_border
+end
+
+local function get_border(win_config)
+  local border_top = "╭" .. string.rep("─", win_config.width - 2) .. "╮"
+  local border_mid = "│" .. string.rep(" ", win_config.width - 2) .. "│"
+  local border_bot = "╰" .. string.rep("─", win_config.width - 2) .. "╯"
   local border = { border_top }
-  for _ = 1, win_height-2 do
+  for _ = 1, win_config.height-2 do
       table.insert(border, border_mid)
   end
   table.insert(border, border_bot)
+  return border
+end
+
+function View:setup(opts)
+  local win_config_border = get_window_config(opts)
+  local border = get_border(win_config_border)
 
   -- Create a floating window for the border
   self.buf_border = vim.api.nvim_create_buf(false, true)
@@ -103,12 +119,6 @@ function View:setup(opts)
   -- Create a floating window for the content
   self.buf_text = vim.api.nvim_create_buf(false, true)
   self.win_text = vim.api.nvim_open_win(self.buf_text, true, win_conf_text)
-
-  -- TODO: Allow the win/buf to persist so we can edit files with this window still open
-  -- vim.api.nvim_create_autocmd('BufLeave', {
-  --     command = string.format('bw %s | bw %s', self.buf_border, self.buf_text),
-  --     once = true
-  -- })
 
   -- Set props
   vim.api.nvim_set_current_buf(self.buf_text)
@@ -138,8 +148,27 @@ function View:close()
   end
 end
 
-function View:update(...)
-  -- TODO
+function View:update(opts)
+  local win_config_border = get_window_config(opts)
+  local border = get_border(win_config_border)
+
+  -- Redraw the border
+  vim.api.nvim_buf_set_lines(self.buf_border, 0, -1, true, border)
+  vim.api.nvim_win_set_config(self.win_border, win_config_border)
+
+  -- Resize the text-buffer window
+  local win_conf_text = {
+      relative = win_config_border.relative,
+      width    = win_config_border.width - 2,
+      height   = win_config_border.height - 2,
+      col      = win_config_border.col + 1,
+      row      = win_config_border.row + 1
+  }
+  vim.api.nvim_win_set_config(self.win_text, win_conf_text)
+  vim.api.nvim_set_current_buf(self.buf_text)
+
+  local query = opts.query or ''
+  vim.fn.execute('help ' .. query)
 end
 
 function View.create(opts)
