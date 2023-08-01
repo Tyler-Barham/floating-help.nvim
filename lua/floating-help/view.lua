@@ -16,15 +16,42 @@ function View:new(opts)
   return this
 end
 
+-- position, editor width/height, window width/height
+local function get_anchor(pos,ew,eh,ww,wh)
+  -- Center
+  local anchor = {
+    col = math.floor((ew - ww) / 2),
+    row = math.floor((eh - wh) / 2)
+  }
+
+  if string.match(pos,'N') ~= nil then
+    anchor.row = 0
+  end
+  if string.match(pos, 'W') ~= nil then
+    anchor.col = 0
+  end
+  if string.match(pos, 'S') ~= nil then
+    anchor.row = eh - wh - 2
+  end
+  if string.match(pos, 'E') ~= nil then
+    anchor.col = ew - ww
+  end
+
+  return anchor
+end
+
 function View:setup(opts)
   opts = opts or {}
 
+  config.options.max_width = opts.max_width or config.options.max_width
+  config.options.max_height = opts.max_height or config.options.max_height
+  config.options.position = opts.position or config.options.position
+
   local editor_width = vim.o.columns
   local editor_height = vim.o.lines
+
   local win_width = config.options.max_width
   local win_height = config.options.max_height
-
-  -- If a ratio of the editor size
   if win_width < 1 then
     win_width = math.floor(editor_width * win_width)
   end
@@ -32,11 +59,13 @@ function View:setup(opts)
     win_height = math.floor(editor_height * win_height)
   end
 
-  -- TODO: Use config.options.position
-  local anchor = {
-    col = math.floor((editor_width - win_width) / 2),
-    row = math.floor((editor_height - win_height) / 2)
-  }
+  local anchor = get_anchor(
+    config.options.position,
+    editor_width,
+    editor_height,
+    win_width,
+    win_height
+  )
 
   -- Define the window configuration
   local win_config_border = {
@@ -107,6 +136,10 @@ function View:close()
   if vim.api.nvim_buf_is_valid(self.buf_border) then
     vim.api.nvim_buf_delete(self.buf_border, {})
   end
+end
+
+function View:update(...)
+  -- TODO
 end
 
 function View.create(opts)

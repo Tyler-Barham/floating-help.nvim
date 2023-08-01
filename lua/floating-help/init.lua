@@ -25,10 +25,15 @@ local function get_opts(...)
   end
   local opts = {}
   for key, value in pairs(args) do
+
     if type(key) == "number" then
       local k, v = value:match("^(.*)=(.*)$")
       if k then
-        opts[k] = v
+        if tonumber(v) then
+          opts[k] = tonumber(v)
+        else
+          opts[k] = v
+        end
       else
         opts['query'] = value
       end
@@ -36,6 +41,7 @@ local function get_opts(...)
       opts[key] = value
     end
   end
+
   opts = opts or {}
   return opts
 end

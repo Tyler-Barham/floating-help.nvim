@@ -5,7 +5,7 @@ M.namespace = vim.api.nvim_create_namespace('FloatingHelp')
 local defaults = {
   max_width = 80,   -- Whole numbers are columns
   max_height = 0.9, -- Decimals are percentage of editor
-  position = 'NW',  -- Cardinal or 'C' for center
+  position = 'C',   -- NW,N,NW,W,C,E,SW,S,SE (C==center)
   query = '',       -- Stores the search query
 }
 
