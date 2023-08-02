@@ -1,6 +1,6 @@
 # 📚 FloatingHelp
 
-<p align="center">A Neovim plugin to show `:help` in an anchorable/resizable floating window.</p>
+<p align="center">A Neovim plugin to show <code>:help</code> in an anchorable/resizable floating window.</p>
 
 ![FloatingHelp Screenshot](./media/floating-help-active.png)
 `:FloatingHelp dap.txt position=NE max_height=0.55`
