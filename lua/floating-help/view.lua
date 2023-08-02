@@ -5,14 +5,17 @@ View.__index = View
 
 local view = nil
 
-function View:new(opts)
-  opts = opts or {}
+function View:new()
+  if view then
+    return view
+  end
 
   local this = {
-    win_border = nil,
-    buf_border = nil,
-    win_text   = nil,
-    buf_text   = nil,
+    win_border  = nil,
+    buf_border  = nil,
+    win_text    = nil,
+    buf_text    = nil,
+    query       = '',
   }
   setmetatable(this, self)
   return this
@@ -135,8 +138,8 @@ function View:setup(opts)
     end
   })
 
-  local query = opts.query or ''
-  vim.fn.execute('help ' .. query)
+  self.query = opts.query or self.query
+  vim.fn.execute('help ' .. self.query)
 end
 
 function View:is_valid()
@@ -160,24 +163,18 @@ function View:close()
     vim.api.nvim_buf_delete(self.buf_border, {})
     self.buf_border = nil
   end
-  view = nil
 end
 
 function View:update(opts)
-  local v = view  -- Get ref to this obj
   view:close()    -- Close and cleanup (losing self ref)
-  view = v        -- Reinstate self ref (don't run new() or external/internal refs point to diff objs)
-  v:setup(opts)   -- Run a clean setup
-
+  view:setup(opts)   -- Run a clean setup
 end
 
 function View.create(opts)
   opts = opts or {}
 
-  if not view then
-    view = View:new(opts)
-    view:setup(opts)
-  end
+  view = View:new()
+  view:update(opts)
 
   return view
 end
