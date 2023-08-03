@@ -36,9 +36,17 @@ fh.setup({
 -- Create a keymap for toggling the help window
 vim.keymap.set('n', '<F1>', fh.toggle)
 
+-- Only replace cmds, not search; only replace the first instance
+local function cmd_abbrev(abbrev, expansion)
+  local cmd = 'cabbr ' .. abbrev .. ' <c-r>=(getcmdpos() == 1 && getcmdtype() == ":" ? "' .. expansion .. '" : "' .. abbrev .. '")<CR>'
+  vim.cmd(cmd)
+end
+
 -- Redirect `:h` to `:FloatingHelp`
-vim.cmd([[cabbrev h FloatingHelp]])
-vim.cmd([[cabbrev help FloatingHelp]])
+cmd_abbrev('h',         'FloatingHelp')
+cmd_abbrev('help',      'FloatingHelp')
+cmd_abbrev('helpc',     'FloatingHelpClose')
+cmd_abbrev('helpclose', 'FloatingHelpClose')
 ```
 
 ## 🚀 Usage
@@ -51,7 +59,7 @@ vim.cmd([[cabbrev help FloatingHelp]])
 
 Args (none are positional):
 
-- `<str>`: Help page
+- `<str>` The help page to show
 - `position=<str>`
 - `max_height=<number>`
 - `max_width=<number>`
