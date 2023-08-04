@@ -139,7 +139,12 @@ function View:setup(opts)
   })
 
   self.query = opts.query or self.query
-  vim.fn.execute('help ' .. self.query)
+  local ok, res = pcall(vim.fn.execute, 'help ' .. self.query)
+  -- Handle errors (i.e. no help page)
+  if not ok then
+    view:close()
+    vim.api.nvim_echo({{res, 'Error'}}, true, {})
+  end
 end
 
 function View:is_valid()
