@@ -18,6 +18,12 @@ function FloatingHelp.close()
   end
 end
 
+local opt_table = {
+  ['p'] = 'position',
+  ['w'] = 'width',
+  ['h'] = 'height',
+}
+
 local function get_opts(...)
   local args = { ... }
   if vim.tbl_islist(args) and #args == 1 and type(args[1]) == "table" then
@@ -29,12 +35,18 @@ local function get_opts(...)
     if type(key) == "number" then
       local k, v = value:match("^(.*)=(.*)$")
       if k then
+        -- Expand char opt to str opt
+        if string.len(k) == 1 then
+          k = opt_table[k]
+        end
+        -- Convert str to num
         if tonumber(v) then
           opts[k] = tonumber(v)
         else
           opts[k] = v
         end
       else
+        -- didn't contain `=`
         opts['query'] = value
       end
     else

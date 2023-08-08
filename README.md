@@ -3,10 +3,10 @@
 <p align="center">A Neovim plugin to show <code>:help</code> in an anchorable/resizable floating window.</p>
 
 ![FloatingHelp Screenshot](./media/floating-help-active.png)
-`:FloatingHelp dap.txt position=NE max_height=0.55`
+`:FloatingHelp dap.txt position=NE height=0.55`
 
 ![FloatingHelp Screenshot](./media/floating-help-inactive.png)
-`:FloatingHelp test position=SW max_height=0.5 max_width=40`
+`:FloatingHelp test position=SW height=0.5 width=40`
 
 ## ⚒️ Installation
 
@@ -28,8 +28,8 @@ local fh = require('floating-help')
 
 fh.setup({
   -- Defaults
-  max_width = 80,   -- Whole numbers are columns/rows
-  max_height = 0.9, -- Decimals are a percentage of the editor
+  width = 80,   -- Whole numbers are columns/rows
+  height = 0.9, -- Decimals are a percentage of the editor
   position = 'E',   -- NW,N,NW,W,C,E,SW,S,SE (C==center)
 })
 
@@ -60,9 +60,9 @@ cmd_abbrev('helpclose', 'FloatingHelpClose')
 Args (none are positional):
 
 - `<str>` The help page to show
-- `position=<str>`
-- `max_height=<number>`
-- `max_width=<number>`
+- `p[osition]=<str>`
+- `h[eight]=<number>`
+- `w[idth]=<number>`
 
 ### API
 

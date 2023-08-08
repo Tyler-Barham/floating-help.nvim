@@ -29,7 +29,9 @@ local function get_anchor(pos,ew,eh,ww,wh)
     row = math.floor((eh - wh) / 2) - 1 -- `-1` offset to always have status/command lines visible
   }
 
-  if string.match(pos,'N') ~= nil then
+  pos = string.upper(pos)
+
+  if string.match(pos, 'N') ~= nil then
     anchor.row = 0
   end
   if string.match(pos, 'W') ~= nil then
@@ -48,15 +50,15 @@ end
 local function get_window_config(opts)
   opts = opts or {}
 
-  config.options.max_width = opts.max_width or config.options.max_width
-  config.options.max_height = opts.max_height or config.options.max_height
+  config.options.width = opts.width or config.options.width
+  config.options.height = opts.height or config.options.height
   config.options.position = opts.position or config.options.position
 
   local editor_width = vim.o.columns
   local editor_height = vim.o.lines
 
-  local win_width = config.options.max_width
-  local win_height = config.options.max_height
+  local win_width = config.options.width
+  local win_height = config.options.height
 
   -- Redo for percentages
   if win_width < 1 then
