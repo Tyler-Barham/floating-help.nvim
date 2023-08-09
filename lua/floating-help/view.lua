@@ -174,6 +174,8 @@ function View:close()
     vim.api.nvim_buf_delete(self.buf_border, {})
     self.buf_border = nil
   end
+
+  vim.fn.execute('doautocmd WinEnter')
 end
 
 function View:update(opts)
