@@ -22,6 +22,7 @@ local opt_table = {
   ['p'] = 'position',
   ['w'] = 'width',
   ['h'] = 'height',
+  ['t'] = 'type',
 }
 
 local function get_opts(...)

@@ -129,8 +129,6 @@ function View:setup(opts)
 
   -- Set props
   vim.api.nvim_set_current_buf(self.buf_text)
-  vim.opt_local.filetype = 'help'
-  vim.opt_local.buftype = 'help'
 
   vim.api.nvim_create_autocmd({'WinClosed'}, {
     callback = function(ev)
@@ -140,16 +138,84 @@ function View:setup(opts)
     end
   })
 
-  self.query = opts.query or self.query
-  local ok, res = pcall(vim.fn.execute, 'help ' .. self.query)
-  -- Handle errors (i.e. no help page)
-  if not ok then
+  local ok = true
+  local res = ''
+
+  -- First use and no type, default to help
+  if not self.query_type and not opts.type then
+    opts.type = 'help'
+    -- First use and no page, default to help.txt
     if not opts.query then
-      vim.fn.execute('help')
-    else
-      view:close()
-      vim.api.nvim_echo({{res, 'Error'}}, true, {})
+      opts.query = 'help.txt'
     end
+  end
+
+  -- If we have a new query but no type, defualt to help
+  -- If we have neither, will be toggling so keep type as last set
+  if opts.query and not opts.type then
+    opts.type = 'help'
+  -- There was type=... but no page to query
+  elseif opts.type and not opts.query then
+    ok = false
+    res = "No query given for "..opts.type.."!"
+  end
+
+  local query = opts.query or self.query
+  local query_type = opts.type or self.query_type
+
+  -- if not ok, opts were incomplete
+  if ok then
+    if query_type == 'help' then
+      vim.opt_local.filetype = 'help'
+      vim.opt_local.buftype = 'help'
+      ok, res = pcall(vim.fn.execute, 'help ' .. query)
+
+    elseif query_type == 'cppman' then
+      vim.opt_local.filetype = 'man'
+      local cpp_cmd = 'cppman --force-columns ' .. win_conf_text.width .. ' ' .. query
+      local file
+      ok, file = pcall(io.popen, cpp_cmd)
+
+      if file then
+        -- Populate res
+        res = file:read('*a')
+        file:close()
+
+        -- If no cppman page for query
+        if string.match(res, 'No manual entry') then
+          ok = false
+          res = "No cppman entry for "..query
+
+        -- Else format cppman results
+        else
+          local lines = {}
+          for line in string.gmatch(res, '(.-)\n') do
+            table.insert(lines, line)
+          end
+          vim.api.nvim_buf_set_lines(self.buf_text, 0, -1, true, lines)
+        end
+
+      -- Else io.popen failed
+      else
+        ok = false
+        res = "Failed to get cppman results"
+      end
+
+    -- Else query_type
+    else
+      ok = false
+      res = "Unsupported query type!"
+    end
+  end
+
+  -- Save the valid query
+  if ok then
+    self.query = query
+    self.query_type = query_type
+  -- Handle errors (i.e. no help page)
+  elseif not ok then
+    view:close()
+    vim.api.nvim_echo({{res, 'Error'}}, true, {})
   end
 end
 

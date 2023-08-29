@@ -1,6 +1,6 @@
 # 📚 FloatingHelp
 
-<p align="center">A Neovim plugin to show <code>:help</code> in an anchorable/resizable floating window.</p>
+<p align="center">A Neovim plugin to show <code>:help</code> and [cppman](https://github.com/aitjcize/cppman) in an anchorable/resizable floating window.</p>
 
 ![FloatingHelp Screenshot](./media/floating-help-active.png)
 `:FloatingHelp dap.txt position=NE height=0.55`
@@ -16,6 +16,8 @@ Install with your preferred plugin manager:
 -- packer.nvim
 use 'Tyler-Barham/floating-help.nvim'
 ```
+
+Optionally, install [cppman](https://github.com/aitjcize/cppman)
 
 ## ⚙️ Configuration
 
@@ -35,6 +37,10 @@ fh.setup({
 
 -- Create a keymap for toggling the help window
 vim.keymap.set('n', '<F1>', fh.toggle)
+-- Create a keymap to search cppman for the word under the cursor
+vim.keymap.set('n', '<F2>', function()
+  fh.open('t=cppman', vim.fn.expand('<cword>'))
+end)
 
 -- Only replace cmds, not search; only replace the first instance
 local function cmd_abbrev(abbrev, expansion)
@@ -60,9 +66,10 @@ cmd_abbrev('helpclose', 'FloatingHelpClose')
 Args (none are positional):
 
 - `<str>` The help page to show
-- `p[osition]=<str>`
+- `p[osition]=<N,S,E,W>`
 - `h[eight]=<number>`
 - `w[idth]=<number>`
+- `t[ype]=<help|cppman>
 
 ### API
 
