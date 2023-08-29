@@ -1,6 +1,6 @@
 # 📚 FloatingHelp
 
-<p align="center">A Neovim plugin to show <code>:help</code> and [cppman](https://github.com/aitjcize/cppman) in an anchorable/resizable floating window.</p>
+<p align="center">A Neovim plugin to show <code>:help</code> and <a href="https://github.com/aitjcize/cppman">cppman</a> in an anchorable/resizable floating window.</p>
 
 ![FloatingHelp Screenshot](./media/floating-help-active.png)
 `:FloatingHelp dap.txt position=NE height=0.55`
@@ -69,7 +69,7 @@ Args (none are positional):
 - `p[osition]=<N,S,E,W>`
 - `h[eight]=<number>`
 - `w[idth]=<number>`
-- `t[ype]=<help|cppman>
+- `t[ype]=<help|cppman>`
 
 ### API
 
