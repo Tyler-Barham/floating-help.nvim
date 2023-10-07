@@ -53,6 +53,7 @@ local function get_window_config(opts)
   config.options.width = opts.width or config.options.width
   config.options.height = opts.height or config.options.height
   config.options.position = opts.position or config.options.position
+  config.options.borderchars = opts.borderchars or config.options.borderchars
 
   local editor_width = vim.o.columns
   local editor_height = vim.o.lines
@@ -94,9 +95,10 @@ local function get_window_config(opts)
 end
 
 local function get_border(win_config)
-  local border_top = "╭" .. string.rep("─", win_config.width - 2) .. "╮"
-  local border_mid = "│" .. string.rep(" ", win_config.width - 2) .. "│"
-  local border_bot = "╰" .. string.rep("─", win_config.width - 2) .. "╯"
+  local borderchars = config.options.borderchars
+  local border_top = borderchars[5] .. string.rep(borderchars[1], win_config.width - 2) .. borderchars[6]
+  local border_mid = borderchars[2] .. string.rep(" ", win_config.width - 2) .. borderchars[4]
+  local border_bot = borderchars[8] .. string.rep(borderchars[3], win_config.width - 2) .. borderchars[7]
   local border = { border_top }
   for _ = 1, win_config.height-2 do
       table.insert(border, border_mid)
