@@ -42,6 +42,10 @@ vim.keymap.set('n', '<F1>', fh.toggle)
 vim.keymap.set('n', '<F2>', function()
   fh.open('t=cppman', vim.fn.expand('<cword>'))
 end)
+-- Create a keymap to search man for the word under the cursor
+vim.keymap.set('n', '<F2>', function()
+  fh.open('t=man', vim.fn.expand('<cword>'))
+end)
 
 -- Only replace cmds, not search; only replace the first instance
 local function cmd_abbrev(abbrev, expansion)

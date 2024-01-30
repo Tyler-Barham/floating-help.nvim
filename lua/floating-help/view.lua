@@ -172,11 +172,16 @@ function View:setup(opts)
       vim.opt_local.buftype = 'help'
       ok, res = pcall(vim.fn.execute, 'help ' .. query)
 
-    elseif query_type == 'cppman' then
+    elseif query_type == 'cppman' or query_type == 'man' then
       vim.opt_local.filetype = 'man'
-      local cpp_cmd = 'cppman --force-columns ' .. win_conf_text.width .. ' ' .. query
+      local cmd
+      if query_type == 'cppman' then
+        cmd = 'cppman --force-columns ' .. win_conf_text.width .. ' ' .. query
+      else
+        cmd = 'man ' .. query .. ' | col -b'
+      end
       local file
-      ok, file = pcall(io.popen, cpp_cmd)
+      ok, file = pcall(io.popen, cmd)
 
       if file then
         -- Populate res
@@ -186,7 +191,11 @@ function View:setup(opts)
         -- If no cppman page for query
         if string.match(res, 'No manual entry') then
           ok = false
-          res = "No cppman entry for "..query
+          if query_type == "cppman" then
+            res = "No cppman entry for " .. query
+          else
+            res = "No man entry for " .. query
+          end
 
         -- Else format cppman results
         else
