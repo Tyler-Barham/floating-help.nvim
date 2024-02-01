@@ -1,6 +1,6 @@
 # 📚 FloatingHelp
 
-<p align="center">A Neovim plugin to show <code>:help</code> and <a href="https://github.com/aitjcize/cppman">cppman</a> in an anchorable/resizable floating window.</p>
+<p align="center">A Neovim plugin to show <code>:help</code>, <a href="https://github.com/aitjcize/cppman">cppman</a>, or <code>man</code> in an anchorable/resizable floating window.</p>
 
 ![FloatingHelp Screenshot](./media/floating-help-active.png)
 `:FloatingHelp dap.txt position=NE height=0.55`
@@ -43,7 +43,7 @@ vim.keymap.set('n', '<F2>', function()
   fh.open('t=cppman', vim.fn.expand('<cword>'))
 end)
 -- Create a keymap to search man for the word under the cursor
-vim.keymap.set('n', '<F2>', function()
+vim.keymap.set('n', '<F3>', function()
   fh.open('t=man', vim.fn.expand('<cword>'))
 end)
 
@@ -74,7 +74,7 @@ Args (none are positional):
 - `p[osition]=<N,S,E,W>`
 - `h[eight]=<number>`
 - `w[idth]=<number>`
-- `t[ype]=<help|cppman>`
+- `t[ype]=<help|cppman|man>`
 
 ### API
 

@@ -11,8 +11,8 @@ Table of Contents                                          *floating-help-toc*
 ==============================================================================
 1. FloatingHelp                                   *floating-help-introduction*
 
-A Neovim plugin to show :help and cppman in an anchorable/resizable floating
-window.
+A Neovim plugin to show :help, cppman, or man in an anchorable/resizable
+floating window.
 
 
 INSTALLATION                                      *floating-help-installation*
@@ -50,6 +50,10 @@ You need to call the `setup()` method to initialize the plugin
   vim.keymap.set('n', '<F2>', function()
     fh.open('t=cppman', vim.fn.expand('<cword>'))
   end)
+  -- Create a keymap to search man for the word under the cursor
+  vim.keymap.set('n', '<F3>', function()
+    fh.open('t=man', vim.fn.expand('<cword>'))
+  end)
 
   -- Only replace cmd, not search; only replace the first instance
   local function cmd_abbrev(abbrev, expansion)
@@ -80,7 +84,7 @@ Args (none are positional):
 - `p[osition]=<str>`
 - `h[eight]=<number>`
 - `w[idth]=<number>`
-
+- `t[ype]=<help|cppman|man>`
 
 API ~
 
