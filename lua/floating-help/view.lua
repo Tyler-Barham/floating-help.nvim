@@ -178,7 +178,7 @@ function View:setup(opts)
       if query_type == 'cppman' then
         cmd = 'cppman --force-columns ' .. win_conf_text.width .. ' ' .. query
       else
-        cmd = 'man ' .. query .. ' | col -b'
+        cmd = 'MANWIDTH=' .. win_conf_text.width ..' man ' .. query .. ' | col -bx'
       end
       local file
       ok, file = pcall(io.popen, cmd)
@@ -188,16 +188,12 @@ function View:setup(opts)
         res = file:read('*a')
         file:close()
 
-        -- If no cppman page for query
-        if string.match(res, 'No manual entry') then
+        -- If no cppman/man page for query
+        if (res == nil) or (res == '') or string.match(res, 'No manual entry') then
           ok = false
-          if query_type == "cppman" then
-            res = "No cppman entry for " .. query
-          else
-            res = "No man entry for " .. query
-          end
+          res = "No " .. query_type .. " entry for " .. query
 
-        -- Else format cppman results
+        -- Else format cppman/man results
         else
           local lines = {}
           for line in string.gmatch(res, '(.-)\n') do
@@ -209,13 +205,13 @@ function View:setup(opts)
       -- Else io.popen failed
       else
         ok = false
-        res = "Failed to get cppman results"
+        res = "Failed to get " .. query_type .. " results"
       end
 
     -- Else query_type
     else
       ok = false
-      res = "Unsupported query type!"
+      res = "Unsupported query type: " .. query_type
     end
   end
 
