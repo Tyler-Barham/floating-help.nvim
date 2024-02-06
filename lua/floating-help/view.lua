@@ -220,6 +220,9 @@ function View:setup(opts)
     self.query = query
     self.query_type = query_type
   -- Handle errors (i.e. no help page)
+    if config.options.onload ~= nil then
+      config.options.onload(self.query_type)
+    end
   elseif not ok then
     view:close()
     vim.api.nvim_echo({{res, 'Error'}}, true, {})
