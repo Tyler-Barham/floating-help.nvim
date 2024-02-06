@@ -165,6 +165,11 @@ function View:setup(opts)
   local query = opts.query or self.query
   local query_type = opts.type or self.query_type
 
+  -- keep cursor at the center
+  vim.schedule(function()
+    vim.opt_local.scrolloff = 999
+  end)
+
   -- if not ok, opts were incomplete
   if ok then
     if query_type == 'help' then
