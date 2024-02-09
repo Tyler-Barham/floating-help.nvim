@@ -82,63 +82,33 @@ local function get_window_config(opts)
   )
 
   -- Define the window configuration
-  local win_config_border = {
-      relative = 'editor',
-      width    = win_width,
-      height   = win_height,
-      col      = anchor.col,
-      row      = anchor.row,
-      style    = 'minimal',
+  local win_config = {
+    relative = "editor",
+    width = win_width,
+    height = win_height,
+    col = anchor.col,
+    row = anchor.row,
+    style = "minimal",
+    border = config.options.border or "rounded",
   }
 
-  return win_config_border
-end
-
-local function get_border(win_config)
-  local borderchars = config.options.borderchars
-  local border_top = borderchars[5] .. string.rep(borderchars[1], win_config.width - 2) .. borderchars[6]
-  local border_mid = borderchars[2] .. string.rep(" ", win_config.width - 2) .. borderchars[4]
-  local border_bot = borderchars[8] .. string.rep(borderchars[3], win_config.width - 2) .. borderchars[7]
-  local border = { border_top }
-  for _ = 1, win_config.height-2 do
-      table.insert(border, border_mid)
-  end
-  table.insert(border, border_bot)
-  return border
+  return win_config
 end
 
 function View:setup(opts)
-  local win_config_border = get_window_config(opts)
-  local border = get_border(win_config_border)
-
-  -- Create a floating window for the border
-  self.buf_border = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_buf_set_lines(self.buf_border, 0, -1, true, border)
-  self.win_border = vim.api.nvim_open_win(self.buf_border, true, win_config_border)
-  vim.opt.winhl = 'Normal:Floating'
-
-  local win_conf_text = {
-      relative = win_config_border.relative,
-      width    = win_config_border.width - 2,
-      height   = win_config_border.height - 2,
-      col      = win_config_border.col + 1,
-      row      = win_config_border.row + 1
-  }
-
-  -- Create a floating window for the content
+  -- Create buffer
   self.buf_text = vim.api.nvim_create_buf(false, true)
-  self.win_text = vim.api.nvim_open_win(self.buf_text, true, win_conf_text)
+  vim.api.nvim_buf_set_option(self.buf_text, "bufhidden", "wipe")
 
-  -- Set props
+  -- Create floating window
+  local win_config = get_window_config(opts)
+  win = vim.api.nvim_open_win(self.buf_text, true, win_config)
+  vim.opt.winhl = "Normal:Floating"
+
+  -- Focus contents buffer (this must be done after window creation)
   vim.api.nvim_set_current_buf(self.buf_text)
 
-  vim.api.nvim_create_autocmd({'WinClosed'}, {
-    callback = function(ev)
-      if ev.buf == self.buf_border or ev.buf == self.buf_text then
-        view:close()
-      end
-    end
-  })
+  -- Generate contents
 
   local ok = true
   local res = ''
@@ -171,6 +141,7 @@ function View:setup(opts)
   end)
 
   -- if not ok, opts were incomplete
+  local text_width = win_config.width + 3
   if ok then
     if query_type == 'help' then
       vim.opt_local.filetype = 'help'
@@ -181,9 +152,9 @@ function View:setup(opts)
       vim.opt_local.filetype = 'man'
       local cmd
       if query_type == 'cppman' then
-        cmd = 'cppman --force-columns ' .. win_conf_text.width .. ' ' .. query
+        cmd = "cppman --force-columns " .. text_width .. " " .. query
       else
-        cmd = 'MANWIDTH=' .. win_conf_text.width ..' man ' .. query .. ' | col -bx'
+        cmd = "MANWIDTH=" .. text_width .. " man " .. query .. " | col -bx"
       end
       local file
       ok, file = pcall(io.popen, cmd)
