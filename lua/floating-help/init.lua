@@ -69,16 +69,18 @@ function FloatingHelp.open(...)
   end
 end
 
-local buffer_position = { 0, 0 }
+local buffer_position = {}
 function FloatingHelp.toggle(...)
   if FloatingHelp.is_open() then
     buffer_position = vim.api.nvim_win_get_cursor(0)
     FloatingHelp.close()
   else
     FloatingHelp.open(...)
-    vim.schedule(function()
-      vim.api.nvim_win_set_cursor(0, buffer_position)
-    end)
+    if next(buffer_position) ~= nil then
+      vim.schedule(function()
+        vim.api.nvim_win_set_cursor(0, buffer_position)
+      end)
+    end
   end
 end
 
