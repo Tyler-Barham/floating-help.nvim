@@ -135,6 +135,11 @@ function View:setup(opts)
   local query = opts.query or self.query
   local query_type = opts.type or self.query_type
 
+  -- keep cursor at the center
+  vim.schedule(function()
+    vim.opt_local.scrolloff = 999
+  end)
+
   -- if not ok, opts were incomplete
   local text_width = win_config.width + 3
   if ok then
@@ -191,6 +196,9 @@ function View:setup(opts)
     self.query = query
     self.query_type = query_type
   -- Handle errors (i.e. no help page)
+    if config.options.onload ~= nil then
+      config.options.onload(self.query_type)
+    end
   elseif not ok then
     view:close()
     vim.api.nvim_echo({{res, 'Error'}}, true, {})
