@@ -11,14 +11,17 @@ function View:new()
   end
 
   local this = {
-    win_border  = nil,
-    buf_border  = nil,
-    win_text    = nil,
-    buf_text    = nil,
+    window      = nil,
+    buffer      = nil,
     query       = '',
+    query_type  = '',
   }
   setmetatable(this, self)
   return this
+end
+
+local function is_empty_str(s)
+  return s == nil or s == ''
 end
 
 -- position, editor width/height, window width/height
@@ -97,16 +100,16 @@ end
 
 function View:setup(opts)
   -- Create buffer
-  self.buf_text = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_buf_set_option(self.buf_text, "bufhidden", "wipe")
+  self.buffer = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_option(self.buffer, "bufhidden", "wipe")
 
   -- Create floating window
   local win_config = get_window_config(opts)
-  win = vim.api.nvim_open_win(self.buf_text, true, win_config)
+  self.window = vim.api.nvim_open_win(self.buffer, true, win_config)
   vim.opt.winhl = "Normal:Floating"
 
   -- Focus contents buffer (this must be done after window creation)
-  vim.api.nvim_set_current_buf(self.buf_text)
+  vim.api.nvim_set_current_buf(self.buffer)
 
   -- Generate contents
 
@@ -114,22 +117,22 @@ function View:setup(opts)
   local res = ''
 
   -- First use and no type, default to help
-  if not self.query_type and not opts.type then
+  if is_empty_str(self.query_type) and is_empty_str(opts.type) then
     opts.type = 'help'
     -- First use and no page, default to help.txt
-    if not opts.query then
+    if is_empty_str(opts.query) then
       opts.query = 'help.txt'
     end
   end
 
   -- If we have a new query but no type, defualt to help
   -- If we have neither, will be toggling so keep type as last set
-  if opts.query and not opts.type then
+  if not is_empty_str(opts.query) and is_empty_str(opts.type) then
     opts.type = 'help'
   -- There was type=... but no page to query
-  elseif opts.type and not opts.query then
+  elseif not is_empty_str(opts.type) and is_empty_str(opts.query) then
     ok = false
-    res = "No query given for "..opts.type.."!"
+    res = "No query given for " .. opts.type .. "!"
   end
 
   local query = opts.query or self.query
@@ -140,8 +143,9 @@ function View:setup(opts)
     vim.opt_local.scrolloff = 999
   end)
 
-  -- if not ok, opts were incomplete
   local text_width = win_config.width + 3
+
+  -- if not ok, opts were incomplete
   if ok then
     if query_type == 'help' then
       vim.opt_local.filetype = 'help'
@@ -165,7 +169,7 @@ function View:setup(opts)
         file:close()
 
         -- If no cppman/man page for query
-        if (res == nil) or (res == '') or string.match(res, 'No manual entry') then
+        if is_empty_str(res) or string.match(res, 'No manual entry') then
           ok = false
           res = "No " .. query_type .. " entry for " .. query
 
@@ -175,7 +179,7 @@ function View:setup(opts)
           for line in string.gmatch(res, '(.-)\n') do
             table.insert(lines, line)
           end
-          vim.api.nvim_buf_set_lines(self.buf_text, 0, -1, true, lines)
+          vim.api.nvim_buf_set_lines(self.buffer, 0, -1, true, lines)
         end
 
       -- Else io.popen failed
@@ -195,10 +199,10 @@ function View:setup(opts)
   if ok then
     self.query = query
     self.query_type = query_type
-  -- Handle errors (i.e. no help page)
     if config.options.onload ~= nil then
       config.options.onload(self.query_type)
     end
+  -- Handle errors (i.e. no help page)
   elseif not ok then
     view:close()
     vim.api.nvim_echo({{res, 'Error'}}, true, {})
@@ -206,33 +210,25 @@ function View:setup(opts)
 end
 
 function View:is_valid()
-  return self.buf_text and vim.api.nvim_buf_is_valid(self.buf_text) and vim.api.nvim_buf_is_loaded(self.buf_text)
+  return self.buffer and vim.api.nvim_buf_is_valid(self.buffer) and vim.api.nvim_buf_is_loaded(self.buffer)
 end
 
 function View:close()
-  if self.win_text and vim.api.nvim_win_is_valid(self.win_text) then
-    vim.api.nvim_win_close(self.win_text, {})
-    self.win_text = nil
+  if self.window and vim.api.nvim_win_is_valid(self.window) then
+    vim.api.nvim_win_close(self.window, {})
+    self.window = nil
   end
-  if self.win_border and vim.api.nvim_win_is_valid(self.win_border) then
-    vim.api.nvim_win_close(self.win_border, {})
-    self.win_border = nil
-  end
-  if self.buf_text and vim.api.nvim_buf_is_valid(self.buf_text) then
-    vim.api.nvim_buf_delete(self.buf_text, {})
-    self.buf_text = nil
-  end
-  if self.buf_border and vim.api.nvim_buf_is_valid(self.buf_border) then
-    vim.api.nvim_buf_delete(self.buf_border, {})
-    self.buf_border = nil
+  if self.buffer and vim.api.nvim_buf_is_valid(self.buffer) then
+    vim.api.nvim_buf_delete(self.buffer, {})
+    self.buffer = nil
   end
 
   vim.fn.execute('doautocmd WinEnter')
 end
 
 function View:update(opts)
-  view:close()    -- Close and cleanup (losing self ref)
-  view:setup(opts)   -- Run a clean setup
+  view:close()      -- Close and cleanup (losing self ref)
+  view:setup(opts)  -- Run a clean setup
 end
 
 function View.create(opts)
