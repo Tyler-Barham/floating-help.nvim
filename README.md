@@ -13,6 +13,9 @@
 Install with your preferred plugin manager:
 
 ```lua
+-- lazy.nvim
+'Tyler-Barham/floating-help.nvim',
+
 -- packer.nvim
 use 'Tyler-Barham/floating-help.nvim'
 ```
@@ -90,3 +93,8 @@ fh.close()
 ## 🤝 Contributing
 
 All contributions are welcome! Just open a pull request.
+
+## 🔀 Alternatives
+
+[haunt.nvim](https://github.com/adigitoleo/haunt.nvim) - Offers terminals, man pages and help buffers in floating windows
+
